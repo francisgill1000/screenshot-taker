@@ -13,12 +13,15 @@
             margin-top: 20px;
             max-width: 100%;
         }
+        .full-height {
+            height: 100vh; /* Make the container full height */
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <v-app>
-            <v-container>
+            <v-container class="full-height d-flex align-center justify-center">
                 <v-row justify="center">
                     <v-col cols="12" md="8" class="text-center">
                         <!-- Button to capture screen -->
