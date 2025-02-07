@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Screen and Save as Image</title>
+    <!-- Load Vuetify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <!-- Load Material Design Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        #preview {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <v-app>
+            <v-container>
+                <v-row justify="center">
+                    <v-col cols="12" md="8" class="text-center">
+                        <!-- Button to capture screen -->
+                        <v-btn color="primary" @click="captureScreen">
+                            <v-icon left>mdi-monitor-screenshot</v-icon>
+                            Capture Screen
+                        </v-btn>
+                    </v-col>
+                </v-row>
+                <v-row justify="center" v-if="screenshot">
+                    <v-col cols="12" md="8">
+                        <!-- Display the captured screen -->
+                        <v-card class="pa-4">
+                            <img :src="screenshot" alt="Screenshot" id="preview">
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-app>
+    </div>
+
+    <!-- Load Vue and Vuetify -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            vuetify: new Vuetify(),
+            data: {
+                screenshot: null, // Stores the screenshot data URL
+            },
+            methods: {
+                async captureScreen() {
+                    try {
+                        // Ask for permission to capture the screen
+                        const stream = await navigator.mediaDevices.getDisplayMedia({
+                            video: { mediaSource: 'screen' }, // Capture the entire screen
+                        });
+
+                        // Create a video element to display the stream
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.onloadedmetadata = () => {
+                            video.play();
+
+                            // Create a canvas to draw the video frame
+                            const canvas = document.createElement('canvas');
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            const ctx = canvas.getContext('2d');
+
+                            // Draw the video frame onto the canvas
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                            // Convert the canvas to a data URL (image)
+                            this.screenshot = canvas.toDataURL('image/png');
+
+                            // Stop the screen capture
+                            stream.getTracks().forEach(track => track.stop());
+
+                            // Automatically download the screenshot
+                            const link = document.createElement('a');
+                            link.download = 'screen-capture.png'; // File name
+                            link.href = this.screenshot; // Data URL
+                            link.click(); // Trigger download
+                        };
+                    } catch (error) {
+                        console.error('Error capturing screen:', error);
+                        alert('Failed to capture screen. Please try again.');
+                    }
+                },
+            },
+        });
+    </script>
+</body>
+</html>
